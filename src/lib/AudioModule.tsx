@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { ModuleProps } from './types';
 
 /**
@@ -86,7 +86,7 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
         <img 
           src={albumCover} 
           alt={`${title} album cover`}
-          className="w-8 h-8 rounded object-cover"
+          className="w-8 h-8 rounded object-cover ring-1 ring-white/10"
         />
         
         {/* 右侧：波形动画 */}
@@ -122,15 +122,15 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
         <img 
           src={albumCover} 
           alt={`${title} album cover`}
-          className="w-20 h-20 rounded-lg object-cover mb-3"
+          className="w-20 h-20 rounded-lg object-cover mb-3 ring-1 ring-white/10 shadow-lg"
         />
         
         {/* 歌曲信息 */}
         <div className="text-center mb-3">
-          <div className="text-sm font-semibold truncate max-w-[300px]">
+          <div className="text-sm font-semibold text-white truncate max-w-[300px]">
             {title}
           </div>
-          <div className="text-xs text-gray-300 truncate max-w-[300px]">
+          <div className="text-xs text-white/60 truncate max-w-[300px]">
             {artist}
           </div>
         </div>
@@ -144,10 +144,10 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
             step="0.01"
             value={progress}
             onChange={handleProgressChange}
-            className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            className="w-full h-1 rounded-lg appearance-none cursor-pointer slider"
             aria-label="音频进度"
             style={{
-              background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${progress * 100}%, #4b5563 ${progress * 100}%, #4b5563 100%)`,
+              background: `linear-gradient(to right, rgba(59, 130, 246, 0.6) 0%, rgba(59, 130, 246, 0.6) ${progress * 100}%, rgba(255, 255, 255, 0.1) ${progress * 100}%, rgba(255, 255, 255, 0.1) 100%)`,
             }}
           />
         </div>
@@ -158,11 +158,11 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
           {onPrevious && (
             <button
               onClick={onPrevious}
-              className="w-11 h-11 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-full transition-colors"
+              className="w-11 h-11 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-200"
               aria-label="上一曲"
             >
               <svg 
-                className="w-5 h-5 text-white" 
+                className="w-5 h-5 text-white/90" 
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >
@@ -174,7 +174,7 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
           {/* 播放/暂停按钮 */}
           <button
             onClick={onPlayPause}
-            className="w-12 h-12 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-colors"
+            className="w-12 h-12 flex items-center justify-center bg-white/15 hover:bg-white/25 backdrop-blur-md rounded-full transition-all duration-200"
             aria-label={isPlaying ? '暂停' : '播放'}
           >
             {isPlaying ? (
@@ -200,11 +200,11 @@ export const AudioModule: React.FC<AudioModuleProps> = ({
           {onNext && (
             <button
               onClick={onNext}
-              className="w-11 h-11 flex items-center justify-center bg-gray-700 hover:bg-gray-600 rounded-full transition-colors"
+              className="w-11 h-11 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-200"
               aria-label="下一曲"
             >
               <svg 
-                className="w-5 h-5 text-white" 
+                className="w-5 h-5 text-white/90" 
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { ModuleProps } from './types';
 
 /**
@@ -91,60 +92,69 @@ export const AlarmModule: React.FC<AlarmModuleProps> = ({
 
   // compact 状态渲染
   // **Validates: Requirements 5.1**
-  if (state === 'compact') {
-    return (
-      <div 
-        className="flex items-center justify-center text-white text-sm font-medium cursor-pointer"
-        onClick={() => onStateChange?.('expanded')}
-        role="button"
-        tabIndex={0}
-        aria-label="展开闹钟控制"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onStateChange?.('expanded');
-          }
-        }}
-      >
-        ⏱️ {formatTime(remainingSeconds)}
-      </div>
-    );
-  }
-
   // expanded 状态渲染
   // **Validates: Requirements 5.2**
-  if (state === 'expanded') {
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-full p-4 text-white">
-        {/* 大号数字时间 */}
-        <div className="text-5xl font-bold mb-6">
-          {formatTime(remainingSeconds)}
-        </div>
-        
-        {/* 按钮组 */}
-        <div className="flex gap-3">
-          {/* 停止按钮 */}
-          <button
-            onClick={handleStop}
-            className="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-full text-sm font-medium transition-colors min-w-[44px] min-h-[44px]"
-            aria-label="停止闹钟"
-          >
-            停止
-          </button>
-          
-          {/* 稍后提醒按钮 */}
-          <button
-            onClick={handleSnooze}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 rounded-full text-sm font-medium transition-colors min-w-[44px] min-h-[44px]"
-            aria-label="稍后提醒"
-          >
-            稍后提醒
-          </button>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <AnimatePresence mode="wait">
+      {state === 'compact' && (
+        <motion.div
+          key="compact"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="flex items-center justify-center text-white/90 text-sm font-medium cursor-pointer"
+          onClick={() => onStateChange?.('expanded')}
+          role="button"
+          tabIndex={0}
+          aria-label="展开闹钟控制"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onStateChange?.('expanded');
+            }
+          }}
+        >
+          ⏱️ {formatTime(remainingSeconds)}
+        </motion.div>
+      )}
 
-  // default 状态不渲染内容
-  return null;
+      {state === 'expanded' && (
+        <motion.div
+          key="expanded"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="flex flex-col items-center justify-center w-full h-full p-4 text-white"
+        >
+          {/* 大号数字时间 */}
+          <div className="text-5xl font-bold mb-6">
+            {formatTime(remainingSeconds)}
+          </div>
+          
+          {/* 按钮组 */}
+          <div className="flex gap-3">
+            {/* 停止按钮 */}
+            <button
+              onClick={handleStop}
+              className="px-6 py-2 bg-red-500/20 hover:bg-red-500/30 backdrop-blur-md rounded-full text-sm font-medium text-white/90 transition-all duration-200 min-w-[44px] min-h-[44px]"
+              aria-label="停止闹钟"
+            >
+              停止
+            </button>
+            
+            {/* 稍后提醒按钮 */}
+            <button
+              onClick={handleSnooze}
+              className="px-6 py-2 bg-blue-500/20 hover:bg-blue-500/30 backdrop-blur-md rounded-full text-sm font-medium text-white/90 transition-all duration-200 min-w-[44px] min-h-[44px]"
+              aria-label="稍后提醒"
+            >
+              稍后提醒
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 };

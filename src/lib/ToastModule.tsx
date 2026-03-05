@@ -72,15 +72,15 @@ export const ToastModule: React.FC<ToastModuleProps> = ({
   const getVariantColor = (): string => {
     switch (variant) {
       case 'success':
-        return 'text-green-400';
+        return 'text-green-400/80';
       case 'error':
-        return 'text-red-400';
+        return 'text-red-400/80';
       case 'warning':
-        return 'text-yellow-400';
+        return 'text-yellow-400/80';
       case 'info':
-        return 'text-blue-400';
+        return 'text-blue-400/80';
       default:
-        return 'text-blue-400';
+        return 'text-blue-400/80';
     }
   };
 
@@ -96,7 +96,7 @@ export const ToastModule: React.FC<ToastModuleProps> = ({
   if (state === 'compact') {
     return (
       <div 
-        className="flex items-center justify-center gap-2 text-white text-sm font-medium px-4"
+        className="flex items-center justify-center gap-2 text-white/90 text-sm font-medium px-4"
         role="alert"
         aria-live="polite"
         aria-label={`${variant} notification: ${message}`}
@@ -111,7 +111,7 @@ export const ToastModule: React.FC<ToastModuleProps> = ({
         )}
         
         {/* 文本内容 */}
-        <span className="text-white">
+        <span className="text-white/90">
           {truncateMessage(message)}
         </span>
       </div>

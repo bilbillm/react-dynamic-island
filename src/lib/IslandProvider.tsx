@@ -86,10 +86,11 @@ export const IslandProvider: React.FC<IslandProviderProps> = ({
           setCurrentState('default');
         }, 300);
       } else {
-        // 激活模块
-        setActiveModule(module);
-        setModuleProps(props || null);
+        // 激活模块 - 使用函数式更新确保状态同步
+        // 先设置 props 和 state，最后设置 module 以确保渲染时 props 已就绪
+        setModuleProps(props !== undefined ? props : {});
         setCurrentState(targetState || 'compact');
+        setActiveModule(() => module);
       }
     }, 100);
   }, []);

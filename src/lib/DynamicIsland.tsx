@@ -21,12 +21,15 @@ export const MIN_TOUCH_TARGET_SIZE = 44; // 44px × 44px
 /**
  * 状态尺寸规格
  * 
+ * 圆角设计原则：使用连续曲率，圆角半径约为高度的 55-60%
+ * 这样可以确保圆角与直线的连接更加平滑自然
+ * 
  * **Validates: Requirements 1.1**
  */
 const STATE_DIMENSIONS: Record<IslandState, { width: number; height: number; borderRadius: number }> = {
-  default: { width: 150, height: 36, borderRadius: 24 },
-  compact: { width: 200, height: 40, borderRadius: 24 },
-  expanded: { width: 360, height: 160, borderRadius: 40 },
+  default: { width: 150, height: 36, borderRadius: 20 },   // 20/36 ≈ 55%
+  compact: { width: 200, height: 40, borderRadius: 22 },   // 22/40 = 55%
+  expanded: { width: 360, height: 160, borderRadius: 44 }, // 44/160 ≈ 27.5% (更大的形状需要相对更小的圆角比例)
 };
 
 /**
@@ -183,31 +186,63 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ className, style }
       // 应用 layout 属性启用自动布局动画
       // **Validates: Requirements 1.2, 8.1**
       layout
-      // 配置弹簧物理参数
-      // **Validates: Requirements 1.2, 8.2**
-      transition={{
-        type: 'spring',
-        stiffness: 300,
-        damping: 20,
+      // 初始状态和动画状态都保持居中，并控制圆角
+      initial={{
+        x: '-50%',
+        borderRadius: `${scaledDimensions.borderRadius}px`,
       }}
-      // 动态样式：宽度、高度、圆角
-      // **Validates: Requirements 1.1, 1.3, 10.1**
-      style={{
+      animate={{
+        x: '-50%',
         width: `${scaledDimensions.width}px`,
         height: `${scaledDimensions.height}px`,
         borderRadius: `${scaledDimensions.borderRadius}px`,
+      }}
+      // 配置弹簧物理参数 - 强烈回弹 + 圆角平滑
+      // **Validates: Requirements 1.2, 8.2**
+      transition={{
+        width: {
+          type: 'spring',
+          stiffness: 350,   // 高刚度 = 强烈回弹
+          damping: 25,      // 低阻尼 = 更多振荡
+          mass: 0.8,
+        },
+        height: {
+          type: 'spring',
+          stiffness: 350,
+          damping: 25,
+          mass: 0.8,
+        },
+        borderRadius: {
+          type: 'spring',
+          stiffness: 370,   // 圆角稍快，提前完成
+          damping: 30,      // 稍高阻尼避免圆角过度振荡
+          mass: 0.6,
+        },
+        x: {
+          type: 'tween',
+          duration: 0,
+        },
+      }}
+      // 动态样式
+      // **Validates: Requirements 1.1, 1.3, 10.1**
+      style={{
         // 居中定位（fixed + transform）
         // **Validates: Requirements 1.4**
         position: 'fixed',
         top: '20px',
         left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: '#000',
-        overflow: 'hidden',
         zIndex: 9999,
-        // 200ms 内完成尺寸适配
-        // **Validates: Requirements 10.3**
-        transition: 'width 0.2s ease-out, height 0.2s ease-out, border-radius 0.2s ease-out',
+        // Enhanced acrylic glass effect
+        background: 'rgba(28, 28, 30, 0.7)',
+        backdropFilter: 'blur(40px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: `
+          0 8px 32px rgba(0, 0, 0, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2)
+        `,
+        overflow: 'hidden',
         ...style,
       }}
       className={className}
@@ -220,24 +255,78 @@ export const DynamicIsland: React.FC<DynamicIslandProps> = ({ className, style }
       // **Validates: Requirements 11.2**
       tabIndex={hasInteractiveContent ? 0 : -1}
     >
+      {/* Soft edge gradient - 柔化圆角与直线的连接 */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 100% 100% at 50% 50%, transparent 0%, transparent 70%, rgba(0,0,0,0.03) 85%, rgba(0,0,0,0.06) 100%)',
+          borderRadius: 'inherit',
+        }}
+      />
+
+      {/* Edge highlight gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%)',
+          borderRadius: 'inherit',
+        }}
+      />
+
+      {/* Noise texture layer */}
+      <div
+        className="absolute inset-0 pointer-events-none select-none"
+        style={{
+          opacity: 0.03,
+          mixBlendMode: 'overlay',
+          borderRadius: 'inherit',
+        }}
+      >
+        <svg
+          className="w-full h-full"
+          preserveAspectRatio="none"
+        >
+          <filter id="island-noise">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.7"
+              numOctaves="3"
+              stitchTiles="stitch"
+            />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+          <rect
+            width="100%"
+            height="100%"
+            filter="url(#island-noise)"
+          />
+        </svg>
+      </div>
+
       {/* AnimatePresence 包裹模块内容，配置 mode="wait" */}
       {/* **Validates: Requirements 4.2, 8.4** */}
       <AnimatePresence mode="wait">
-        {activeModule && (
+        {activeModule && finalModuleProps.state && (
           <motion.div
             key={activeModule.name || 'module'}
+            layout="position"
             // 内容 opacity 过渡（0.2s）
             // **Validates: Requirements 4.4, 8.3**
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ 
+              opacity: { duration: 0.2 },
+              layout: { duration: 0 }
+            }}
             style={{
               width: '100%',
               height: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              position: 'relative',
+              zIndex: 1,
             }}
           >
             {/* 渲染模块组件 */}
